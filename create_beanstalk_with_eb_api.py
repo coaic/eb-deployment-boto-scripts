@@ -1,15 +1,34 @@
 #!/usr/local/bin/python3
 #
+# Create application and launch environment with dummy application running
+#
 import boto3
+import time
+import webbrowser
 
 region = 'us-west-2'
+# account_id = boto3.resource('iam').CurrentUser().arn.split(':')[4]
 vpc_id = 'vpc-425c7726'
 webserver_subnets = "subnet-3e5f2948,subnet-b9aff1dd,subnet-9640f1ce"
 instance_type = 't2.micro'
 healthcheck_url ='/'
+#
+# Number of minutes to wait for beanstalk to go green
+#
+wait_for_green = 5
 cool_down = str(60 * 6)
 autoscale_max_instance = '4'
 autoscale_min_instance = '1'
+rolling_update_batch_percent = '30'
+#
+# Managed updates
+#
+update_level = 'patch'
+managed_actions_enabled ='true'
+preferred_starttime = "Sun:10:00"
+#
+#
+#
 ssh_key_name = 'shelde-test-us-west-2'
 ssh_restrictions = 'tcp,22,22,124.149.49.200/32'
 instance_profile = 'aws-elasticbeanstalk-ec2-role'
@@ -20,7 +39,11 @@ instance_security_group = 'sg-63372a05'
 #
 application_name = 'shelde01'
 application_description = 'Test application for Shelde demo'
-environment_name = application_name + '-' + 'blue'
+environment_name = "%s-blue" % (application_name)
+notification_email = 'rcoaic@gmail.com'
+#
+# notification_topic = "arn:aws:sns:%s:%s:ElasticBeanstalkNotifications-Environment-%s" % (region, account_id, environment_name)
+#
 environment_description = 'shelde01 blue environment'
 template_name = 'blue_v1'
 solution_stack = '64bit Amazon Linux 2016.03 v2.2.0 running Tomcat 8 Java 8'
@@ -125,16 +148,56 @@ option_settings = [
         "Value": "Rolling"
     },
     {
-        "OptionName": "MaxBatchSize",
-        "ResourceName": "AWSEBAutoScalingGroup",
-        "Namespace": "aws:autoscaling:updatepolicy:rollingupdate",
-        "Value": "1"
+        "OptionName": "LogPublicationControl",
+        "Namespace": "aws:elasticbeanstalk:hostmanager",
+        "Value": "true"
+    },
+    {
+        "OptionName": "JVMOptions",
+        "Namespace": "aws:cloudformation:template:parameter",
+        "Value": "XX:MaxPermSize=64m,Xmx=256m,JVM Options=,Xms=256m"
+    },
+    # {
+    #     "OptionName": "MaxBatchSize",
+    #     "ResourceName": "AWSEBAutoScalingGroup",
+    #     "Namespace": "aws:autoscaling:updatepolicy:rollingupdate",
+    #     "Value": "1"
+    # },
+    {
+        "OptionName": "BatchSize",
+        "Namespace": "aws:elasticbeanstalk:command",
+        "Value": rolling_update_batch_percent
+    },
+    {
+        "OptionName": "BatchSizeType",
+        "Namespace": "aws:elasticbeanstalk:command",
+        "Value": "Percentage"
     },
     {
         "OptionName": "MinInstancesInService",
         "ResourceName": "AWSEBAutoScalingGroup",
         "Namespace": "aws:autoscaling:updatepolicy:rollingupdate",
         "Value": "1"
+    },
+    {
+        "OptionName": "JVM Options",
+        "Namespace": "aws:elasticbeanstalk:container:tomcat:jvmoptions",
+        "Value": ""
+    },
+    {
+        "OptionName": "XX:MaxPermSize",
+        "Namespace": "aws:elasticbeanstalk:container:tomcat:jvmoptions",
+        "Value": "64m"
+    },
+    {
+        "OptionName": "Xms",
+        "Namespace": "aws:elasticbeanstalk:container:tomcat:jvmoptions",
+        "Value": "256m"
+    },
+    {
+        "OptionName": "Xmx",
+        "Namespace": "aws:elasticbeanstalk:container:tomcat:jvmoptions",
+        "Value": "256m"
     },
     {
         "OptionName": "PauseTime",
@@ -186,17 +249,83 @@ option_settings = [
         "Value": healthcheck_url
     },
     {
+        "OptionName": "HealthyThreshold",
+        "ResourceName": "AWSEBLoadBalancer",
+        "Namespace": "aws:elb:healthcheck",
+        "Value": "3"
+    },
+    {
+        "OptionName": "Interval",
+        "ResourceName": "AWSEBLoadBalancer",
+        "Namespace": "aws:elb:healthcheck",
+        "Value": "10"
+    },
+    {
+        "OptionName": "Notification Endpoint",
+        "Namespace": "aws:elasticbeanstalk:sns:topics",
+        "Value": notification_email
+    },
+    {
+        "OptionName": "Notification Protocol",
+        "Namespace": "aws:elasticbeanstalk:sns:topics",
+        "Value": "email"
+    },
+    #
+    # Let Elastic Beanstalk create topic for email notifications
+    #
+    # {
+    #     "OptionName": "Notification Topic ARN",
+    #     "Namespace": "aws:elasticbeanstalk:sns:topics",
+    #     "Value": notification_topic
+    # },
+    # {
+    #     "OptionName": "Notification Topic Name",
+    #     "Namespace": "aws:elasticbeanstalk:sns:topics"
+    # },
+    {
+        "OptionName": "Target",
+        "ResourceName": "AWSEBLoadBalancer",
+        "Namespace": "aws:elb:healthcheck",
+        "Value": "HTTP:80" + healthcheck_url
+    },
+    {
+        "OptionName": "Timeout",
+        "ResourceName": "AWSEBLoadBalancer",
+        "Namespace": "aws:elb:healthcheck",
+        "Value": "5"
+    },
+    {
+        "OptionName": "UnhealthyThreshold",
+        "ResourceName": "AWSEBLoadBalancer",
+        "Namespace": "aws:elb:healthcheck",
+        "Value": "5"
+    },
+    {
         "OptionName": "ConnectionDrainingEnabled",
         "ResourceName": "AWSEBLoadBalancer",
         "Namespace": "aws:elb:policies",
         "Value": "true"
     },
-    # {
-    #     'ResourceName': 'string',
-    #     'Namespace': 'string',
-    #     'OptionName': 'string',
-    #     'Value': 'string'
-    # }
+    {
+        "OptionName": "ManagedActionsEnabled",
+        "Namespace": "aws:elasticbeanstalk:managedactions",
+        "Value": managed_actions_enabled
+    },
+    {
+        "OptionName": "PreferredStartTime",
+        "Namespace": "aws:elasticbeanstalk:managedactions",
+        "Value": preferred_starttime
+    },
+    {
+        "OptionName": "InstanceRefreshEnabled",
+        "Namespace": "aws:elasticbeanstalk:managedactions:platformupdate",
+        "Value": "false"
+    },
+    {
+        "OptionName": "UpdateLevel",
+        "Namespace": "aws:elasticbeanstalk:managedactions:platformupdate",
+        "Value": update_level
+    }
 ]
 client = boto3.client('elasticbeanstalk', region)
 
@@ -205,19 +334,17 @@ if not response['Available']:
     print("ERROR: Environment name: %s already in use." % environment_name)
     exit(1)
 
-# response = client.list_available_solution_stacks()
-# print("*** Available solution stacks: ", response['SolutionStacks'])
-# for stack in response['SolutionStacks']:
-#     print(">>>> ", stack)
-
+#
+# Create application if not already created
+#
 response = client.describe_applications(ApplicationNames=[application_name])
-# print(response['Applications'][0]['ApplicationName'])
-
 if not response['Applications'] or response['Applications'][0]['ApplicationName'] != application_name:
     response = client.create_application(ApplicationName=application_name, Description=application_description)
 
+#
+# Create configuration template if not already created
+#
 response = client.describe_applications(ApplicationNames=[application_name])
-
 if not template_name in response['Applications'][0]['ConfigurationTemplates']:
     response = client.create_configuration_template(
         ApplicationName=application_name,
@@ -227,6 +354,9 @@ if not template_name in response['Applications'][0]['ConfigurationTemplates']:
         OptionSettings=option_settings
     )
 
+#
+# Create environment with dummy application running
+#
 response = client.create_environment(
     ApplicationName=application_name,
     EnvironmentName=environment_name,
@@ -262,4 +392,32 @@ response = client.create_environment(
     #     },
     # ]
 )
-print(response)
+
+url = response['CNAME']
+environment_id = response['EnvironmentId']
+
+#
+# Open AWS Console to observe Environment progress
+#
+webbrowser.open_new("https://us-west-2.console.aws.amazon.com/elasticbeanstalk/home?region=us-west-2#/environment/dashboard?applicationName=%s&environmentId=%s" % (application_name, environment_id))
+
+healthy_environment = False
+#
+#  Wait for environment to become healthy
+#
+for __ in range(0, wait_for_green):
+    time.sleep(60)
+    response = client.describe_environment_health(EnvironmentId=environment_id, AttributeNames=['Color'])
+    if response['Color'] == 'Green':
+        healthy_environment = True
+        break
+
+#
+# Display application in browser
+#
+if healthy_environment:
+    webbrowser.open_new("http://%s" % (url))
+    exit(0)
+else:
+    print("ERROR: environment %s failed to transition to healthy state" % (environment_name))
+    exit(1)
