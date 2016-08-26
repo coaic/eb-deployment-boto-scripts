@@ -175,6 +175,12 @@ option_settings = [
         "Value": instance_type
     },
     {
+        "OptionName": "CrossZone",
+        "ResourceName": "AWSEBLoadBalancer",
+        "Namespace": "aws:elb:loadbalancer",
+        "Value": "true"
+    },
+    {
         "OptionName": "Application Healthcheck URL",
         "Namespace": "aws:elasticbeanstalk:application",
         "Value": healthcheck_url
