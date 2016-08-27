@@ -6,7 +6,6 @@ import boto3
 import ipaddress
 import itertools
 import time
-import webbrowser
 
 region = 'us-west-2'
 cidr_block = '10.1.0.0/16'
@@ -109,6 +108,21 @@ def create_route_tables(vpc_name, vpc_id, igw_id, public_subnets, private_subnet
     return public_route_table_id, private_route_table_id
 
 #
+# Create basic security groups
+#
+def create_security_groups(vpc_name, vpc_id):
+    group_name = "%s-sg" % (vpc_name)
+    description = group_name
+    response = ec2client.create_security_group(GroupName=group_name, Description=description, VpcId=vpc_id)
+    group_id = response['GroupId']
+    response = ec2client.create_tags(Resources=[group_id], Tags=[{'Key': 'Name', 'Value': group_name}])
+
+    response = ec2client.authorize_security_group_ingress(GroupId=group_id, IpPermissions=[{ 'IpProtocol': '-1', 'FromPort': -1, 'ToPort': -1, 'UserIdGroupPairs': [{ 'GroupId': group_id }]}])
+
+    return group_id
+
+
+#
 # Do VPC creation
 #
 availability_zone_names = list_availability_zone_names()
@@ -116,5 +130,8 @@ vpc_id = create_vpc(cidr_block=cidr_block, vpc_name=vpc_name)
 public_subnets, private_subnets = create_subnets(vpc_name=vpc_name, vpc_id=vpc_id, cidr_block=cidr_block, availability_zones=availability_zone_names, subnet_prefix_len=subnet_prefix_len)
 igw_id = create_igw(vpc_name=vpc_name, vpc_id=vpc_id)
 create_route_tables(vpc_name=vpc_name, vpc_id=vpc_id, igw_id=igw_id, public_subnets=public_subnets, private_subnets=private_subnets)
+create_security_groups(vpc_name=vpc_name, vpc_id=vpc_id)
 
+print("Public subnets: ", public_subnets)
+print("Private subnets: ", private_subnets)
 exit(0)
