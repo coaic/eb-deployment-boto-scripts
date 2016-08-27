@@ -27,6 +27,8 @@ def create_vpc(cidr_block, vpc_name):
     response = ec2client.create_vpc(CidrBlock=cidr_block, InstanceTenancy='default')
     vpc_id = response['Vpc']['VpcId']
     response = ec2client.create_tags(Resources=[vpc_id], Tags=[{'Key': 'Name', 'Value': vpc_name}])
+    response = ec2client.modify_vpc_attribute(VpcId=vpc_id, EnableDnsSupport={'Value': True})
+    response = ec2client.modify_vpc_attribute(VpcId=vpc_id, EnableDnsHostnames={'Value': True})
     return vpc_id
 
 #
@@ -75,7 +77,7 @@ def create_igw(vpc_name, vpc_id):
 #
 # Create route tables for public subnets and seperately for private subnets
 #
-def create_route_tables(vpc_id, igw_id, public_subnets, private_subnets):
+def create_route_tables(vpc_name, vpc_id, igw_id, public_subnets, private_subnets):
     #
     # Create public route table
     #
@@ -103,9 +105,9 @@ def create_route_tables(vpc_id, igw_id, public_subnets, private_subnets):
     #
     for subnet in private_subnets:
         response = ec2client.associate_route_table(SubnetId=subnet, RouteTableId=private_route_table_id)
-        pass
 
     return public_route_table_id, private_route_table_id
+
 #
 # Do VPC creation
 #
@@ -113,6 +115,6 @@ availability_zone_names = list_availability_zone_names()
 vpc_id = create_vpc(cidr_block=cidr_block, vpc_name=vpc_name)
 public_subnets, private_subnets = create_subnets(vpc_name=vpc_name, vpc_id=vpc_id, cidr_block=cidr_block, availability_zones=availability_zone_names, subnet_prefix_len=subnet_prefix_len)
 igw_id = create_igw(vpc_name=vpc_name, vpc_id=vpc_id)
-create_route_tables(vpc_id=vpc_id, igw_id=igw_id, public_subnets=public_subnets, private_subnets=private_subnets)
+create_route_tables(vpc_name=vpc_name, vpc_id=vpc_id, igw_id=igw_id, public_subnets=public_subnets, private_subnets=private_subnets)
 
 exit(0)
