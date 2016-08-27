@@ -25,6 +25,7 @@ def list_availability_zone_names():
 def create_vpc(cidr_block, vpc_name):
     response = ec2client.create_vpc(CidrBlock=cidr_block, InstanceTenancy='default')
     vpc_id = response['Vpc']['VpcId']
+    ec2client.get_waiter('vpc_available').wait(VpcIds=[vpc_id])
     response = ec2client.create_tags(Resources=[vpc_id], Tags=[{'Key': 'Name', 'Value': vpc_name}])
     response = ec2client.modify_vpc_attribute(VpcId=vpc_id, EnableDnsSupport={'Value': True})
     response = ec2client.modify_vpc_attribute(VpcId=vpc_id, EnableDnsHostnames={'Value': True})
@@ -45,9 +46,11 @@ def create_subnets(vpc_name, vpc_id, cidr_block, availability_zones, subnet_pref
         zone_name = availability_zones[az_index]
         response = ec2client.create_subnet(VpcId=vpc_id, CidrBlock=str(subnet), AvailabilityZone=zone_name)
         subnet_id = response['Subnet']['SubnetId']
+        ec2client.get_waiter('subnet_available').wait(SubnetIds=[subnet_id])
         response = ec2client.create_tags(Resources=[subnet_id], Tags=[{'Key': 'Name', 'Value': "%s-az%s" % (vpc_name, zone_name[-1:])}])
         public_subnet_ids.append(subnet_id)
         az_index += 1
+
     #
     # Private subnets
     #
@@ -58,6 +61,7 @@ def create_subnets(vpc_name, vpc_id, cidr_block, availability_zones, subnet_pref
         response = ec2client.create_subnet(VpcId=vpc_id, CidrBlock=str(subnet), AvailabilityZone=availability_zones[az_index])
         subnet_id = response['Subnet']['SubnetId']
         private_subnet_ids.append(subnet_id)
+        ec2client.get_waiter('subnet_available').wait(SubnetIds=[subnet_id])
         response = ec2client.create_tags(Resources=[subnet_id], Tags=[{'Key': 'Name', 'Value': "%s-az%s-internal" % (vpc_name, zone_name[-1:])}])
         az_index += 1
 
