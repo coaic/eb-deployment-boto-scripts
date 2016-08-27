@@ -5,6 +5,7 @@
 import boto3
 import ipaddress
 import itertools
+import webbrowser
 import time
 
 region = 'us-west-2'
@@ -134,8 +135,26 @@ def create_cloutfront():
 #
 # Creat Elastic File System in VPC
 #
-def create_elastic_filesystem():
-    pass
+def create_elastic_filesystem(region, vpc_id, private_subnets):
+    print("""
+
+    As Elastic File System is a relatively new service, API support is far from complete. You will need to create the file system
+    in the AWS EFS Console. A browser window will open for you to create the file system. Several prompts from this script will
+    guide you through the process.
+
+    You will need to be already logged into the AWS Console on your browser.
+
+    Ensure you select all listed availability zones.
+
+    """)
+    input("Ready to proceed? ")
+    input("Please note the VPC Id: %s, you will need to select this from wizard when it opens in the browser - ok? " %(vpc_id))
+    input(" Please also ensure you place this file system in the following subnets: %s - ok?" % (private_subnets))
+    webbrowser.open_new("https://%s.console.aws.amazon.com/efs/home?region=%s#/wizard/1" % (region, region))
+
+    mount_point = input("Once you have completed the wizard please paste the mount point from the browser at the prompt: ")
+
+    return mount_point
 
 #
 # Do VPC creation
@@ -146,6 +165,15 @@ public_subnets, private_subnets = create_subnets(vpc_name=vpc_name, vpc_id=vpc_i
 igw_id = create_igw(vpc_name=vpc_name, vpc_id=vpc_id)
 create_route_tables(vpc_name=vpc_name, vpc_id=vpc_id, igw_id=igw_id, public_subnets=public_subnets, private_subnets=private_subnets)
 security_group_id = create_security_groups(vpc_name=vpc_name, vpc_id=vpc_id)
+#
+# Create EFS and save the mount point for use by deployment scripts
+#
+mount_point = create_elastic_filesystem(region=region, vpc_id=vpc_id, private_subnets=private_subnets)
+
+f = open("elstic_file_system_mount", 'w')
+f.seek(0)
+f.write(mount_point[5:])
+f.close()
 
 print("\n\nRegion Id: ", region)
 print("VPC Id: ", vpc_id)
