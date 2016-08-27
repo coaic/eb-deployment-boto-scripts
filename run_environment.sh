@@ -44,8 +44,9 @@ The scripts make several assumptions about the AWS environment:
 16. If you want to rerun ./create_beanstalk_with_eb_api.py from console, please ensure you terminate the environment followed by deleting the
     application in the AWS Console.
 
-17. Prior to deployment the .war file it is unpacked to ./tmp, the .ebextensions folder in the root of the .war is removed and seeded with configured
-    .ebextensions folder to allow configuring launched Ec2s with access to the Elastic File System File at /efs on the EC2
+17. Prior to deployment the .war file is unpacked to ./war, the .ebextensions folder in the root of the .war is removed and seeded with configured
+    .ebextensions folder to allow configuring launched Ec2s with access to the Elastic File System File at /efs on the EC2. The static assets are
+    moved to a folder ./assets to be coppied to an S3 bucket prefix.
 
 
 EOF
