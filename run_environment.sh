@@ -84,5 +84,38 @@ read -p "Copy and from terminal and paste command to run: " command
     echo "Now creating Elastic Beanstalk and launch default Java application"
     eval $command
 )
+#
+# Create and update ebextensions in the .war file
+#
+new_mount=$(sed -e 's/:\/ efs/:\/ \/efs || true/' elastic_file_system_mount)
+mv ROOT.war ROOT-orig.war
+(
+    mkdir -p war
+    rm -rf cloutfront
+    mkdir -p cloudfront
+    cd war
+    rm -rf *
+    jar -xf ../ROOT-orig.war
+    rm -rf .ebextensions
+    cp -a ../dotebextensions .ebextensions
+    #
+    # Replace efs-mount.config
+    #
+    cat <<EOF  >.ebextensions/efs-mount.config
+container_commands:
+  create_mount_point:
+    command: "mkdir /efs || chown ec2-user /efs || true"
+  mount_efs_volume:
+    command: "${new_mount}"
+EOF
+    cp -a images css js ../cloudfront
+    jar -cf ../ROOT.war  *.jsp images css js WEB-INF .ebextensions
+)
 
-echo "Here Here"
+cat <<EOF
+
+Once you have confirmed that the default sample application is running, about 5 minutes. Run:
+
+  deploy_application_with_eb_api.py
+
+EOF

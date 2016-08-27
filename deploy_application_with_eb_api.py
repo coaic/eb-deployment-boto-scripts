@@ -8,6 +8,7 @@ import threading
 import datetime
 import time
 import webbrowser
+import subprocess
 
 region = 'us-west-2'
 application_war = 'ROOT.war'
@@ -50,35 +51,49 @@ except Exception as inst:
     exit(1)
 
 #
-# Upload .war file to Elastic Beanstalk
+# Upload .war file to Elastic Beanstalk and deploy
 #
-s3client.upload_file(application_war, eb_region_s3_bucket, war_version, Callback=ProgressPercentage(war_version))
-print("\nUpload complete.")
+def create_and_deployapplication(application_war, war_version, region, application_name, application_version, eb_region_s3_bucket):
+    s3client.upload_file(application_war, eb_region_s3_bucket, war_version, Callback=ProgressPercentage(war_version))
+    print("\nUpload complete.")
 
 
-response = ebclient.create_application_version(
-    ApplicationName=application_name,
-    VersionLabel=application_version,
-    Description=application_version,
-    SourceBundle={
-        'S3Bucket': eb_region_s3_bucket,
-        'S3Key': war_version
-    },
-    AutoCreateApplication=False,
-    Process=False
-)
+    response = ebclient.create_application_version(
+        ApplicationName=application_name,
+        VersionLabel=application_version,
+        Description=application_version,
+        SourceBundle={
+            'S3Bucket': eb_region_s3_bucket,
+            'S3Key': war_version
+        },
+        AutoCreateApplication=False,
+        Process=False
+    )
 
-response = ebclient.update_environment(EnvironmentName=environment_name, ApplicationName=application_name, VersionLabel=application_version)
+    response = ebclient.update_environment(EnvironmentName=environment_name, ApplicationName=application_name, VersionLabel=application_version)
 
-url = response['CNAME']
-environment_id = response['EnvironmentId']
+    url = response['CNAME']
+    environment_id = response['EnvironmentId']
+
+    #
+    # Open AWS Console to observe Environment progress
+    #
+    webbrowser.open_new("https://%s.console.aws.amazon.com/elasticbeanstalk/home?region=%s#/environment/dashboard?applicationName=%s&environmentId=%s" % (region, region, application_name, environment_id))
+
+    time.sleep(60)
+    webbrowser.open_new("http://%s" % (url))
+
 
 #
-# Open AWS Console to observe Environment progress
+# Deploy application
 #
-webbrowser.open_new("https://us-west-2.console.aws.amazon.com/elasticbeanstalk/home?region=us-west-2#/environment/dashboard?applicationName=%s&environmentId=%s" % (application_name, environment_id))
+create_and_deployapplication(application_war=application_war,
+                             war_version=war_version,
+                             region=region,
+                             application_name=application_name,
+                             application_version=application_version,
+                             eb_region_s3_bucket=eb_region_s3_bucket
+                            )
 
-time.sleep(60)
-webbrowser.open_new("http://%s" % (url))
 exit(0)
 

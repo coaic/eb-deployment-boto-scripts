@@ -170,7 +170,7 @@ security_group_id = create_security_groups(vpc_name=vpc_name, vpc_id=vpc_id)
 #
 mount_point = create_elastic_filesystem(region=region, vpc_id=vpc_id, private_subnets=private_subnets)
 
-f = open("elstic_file_system_mount", 'w')
+f = open("elastic_file_system_mount", 'w')
 f.seek(0)
 f.write(mount_point[5:])
 f.close()
