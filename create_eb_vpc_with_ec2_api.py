@@ -125,6 +125,17 @@ def create_security_groups(vpc_name, vpc_id):
 
     return group_id
 
+#
+# Create s3 bucket and CloudFront Distribution
+#
+def create_cloutfront():
+    pass
+
+#
+# Creat Elastic File System in VPC
+#
+def create_elastic_filesystem():
+    pass
 
 #
 # Do VPC creation
@@ -134,8 +145,12 @@ vpc_id = create_vpc(cidr_block=cidr_block, vpc_name=vpc_name)
 public_subnets, private_subnets = create_subnets(vpc_name=vpc_name, vpc_id=vpc_id, cidr_block=cidr_block, availability_zones=availability_zone_names, subnet_prefix_len=subnet_prefix_len)
 igw_id = create_igw(vpc_name=vpc_name, vpc_id=vpc_id)
 create_route_tables(vpc_name=vpc_name, vpc_id=vpc_id, igw_id=igw_id, public_subnets=public_subnets, private_subnets=private_subnets)
-create_security_groups(vpc_name=vpc_name, vpc_id=vpc_id)
+security_group_id = create_security_groups(vpc_name=vpc_name, vpc_id=vpc_id)
 
+print("\n\nRegion Id: ", region)
+print("VPC Id: ", vpc_id)
+print("Security Group Id: ", security_group_id)
 print("Public subnets: ", public_subnets)
 print("Private subnets: ", private_subnets)
+print("\n\nRun the following script in the terminal to launch your beanstalk environment: \n\n", "python3 ./create_beanstalk_with_eb_api.py %s %s %s \"%s\"" % (region, vpc_id, security_group_id, public_subnets))
 exit(0)

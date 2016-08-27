@@ -5,11 +5,23 @@
 import boto3
 import time
 import webbrowser
+import argparse
 
-region = 'us-west-2'
+parser = argparse.ArgumentParser()
+parser.add_argument('region')
+parser.add_argument('vpcid')
+parser.add_argument('security_group')
+parser.add_argument('subnets')
+args = parser.parse_args()
+
+region = args.region
+vpc_id = args.vpcid
+instance_security_group = args.security_group
+webserver_subnets = ','.join(eval(args.subnets))
+
 # account_id = boto3.resource('iam').CurrentUser().arn.split(':')[4]
-vpc_id = 'vpc-425c7726'
-webserver_subnets = "subnet-3e5f2948,subnet-b9aff1dd,subnet-9640f1ce"
+
+
 instance_type = 't2.micro'
 healthcheck_url ='/'
 #
@@ -33,7 +45,6 @@ ssh_key_name = 'shelde-test-us-west-2'
 ssh_restrictions = 'tcp,22,22,124.149.49.200/32'
 instance_profile = 'aws-elasticbeanstalk-ec2-role'
 service_role = 'aws-elasticbeanstalk-service-role'
-instance_security_group = 'sg-63372a05'
 #
 #
 #
