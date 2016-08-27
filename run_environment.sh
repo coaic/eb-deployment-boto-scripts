@@ -34,6 +34,10 @@ The scripts make several assumptions about the AWS environment:
 
 13. Assumes default roles have been created by Elastic Beanstalk named: aws-elasticbeanstalk-ec2-role and aws-elasticbeanstalk-service-role
     -- this is a one time requirement, roles are not region specific.
+    -- aws-elasticbeanstalk-ec2-role should have the attached policies { AWSElasticBeanstalkWebTier, CloudWatchLogsFullAccess,
+                                                                         AWSElasticBeanstalkMulticontainerDocker, AWSElasticBeanstalkWorkerTier }
+    -- aws-elasticbeanstalk-service-role should have attached policies { AWSElasticBeanstalkEnhancedHealth, AWSElasticBeanstalkService }
+    --
 
 14. The EC2s launched by Elastic Beanstalk have public IPs assigned -- public internet connectivity is required for the EC2s to access
     Elastic Beanstalk API end points.
