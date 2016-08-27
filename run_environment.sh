@@ -13,34 +13,39 @@ The scripts make several assumptions about the AWS environment:
 
 3.  Assumes the region is us-west-2
 
-4.  Assumes an email address for Simple Notification Service notifications: rcoaic at gmail dot com
+4.  Assumes the .war file to be launched is in the same folder as the scripts and is named ROOT.war
 
-5.  The AWS CLI must be installed. Refer to: http://docs.aws.amazon.com/cli/latest/userguide/installing.html
+5.  Assumes an email address for Simple Notification Service notifications: rcoaic at gmail dot com
 
-6.  The aws configure command must be run to store/configure an API key/secret that can be accessed via commands.
+6.  The AWS CLI must be installed. Refer to: http://docs.aws.amazon.com/cli/latest/userguide/installing.html
 
-7.  No API keys or account credentials are stored in the scripts or repository.
+7.  The aws configure command must be run to store/configure an API key/secret that can be accessed via commands.
 
-8.  The development environment is currently Mac OS command line.
+8.  No API keys or account credentials are stored in the scripts or repository.
 
-9.  Various packages not provided via Mac OS have been installed with Homebrew. Refer to http://brew.sh
+9.  The development environment is currently Mac OS command line.
 
-10. There is a reliance on AWS Elastic Beanstalk to create an initial bucket to maintain configuration data needed by
+10. Various packages not provided via Mac OS have been installed with Homebrew. Refer to http://brew.sh
+
+11. There is a reliance on AWS Elastic Beanstalk to create an initial bucket to maintain configuration data needed by
     the service in the region being used.
 
-11. Assumes an EC2 key pair exists for the region, assumes shelde-test-us-west-2.
+12. Assumes an EC2 key pair exists for the region, assumes shelde-test-us-west-2.
 
-12. Assumes default roles have been created by Elastic Beanstalk named: aws-elasticbeanstalk-ec2-role and aws-elasticbeanstalk-service-role
+13. Assumes default roles have been created by Elastic Beanstalk named: aws-elasticbeanstalk-ec2-role and aws-elasticbeanstalk-service-role
     -- this is a one time requirement, roles are not region specific.
 
-13. The EC2s launched by Elastic Beanstalk have public IPs assigned -- public internet connectivity is required for the EC2s to access
+14. The EC2s launched by Elastic Beanstalk have public IPs assigned -- public internet connectivity is required for the EC2s to access
     Elastic Beanstalk API end points.
 
-14. An alternative would be to modify the VPC creation script to create a NAT Service in a public subnet to allow instances with only
+15. An alternative would be to modify the VPC creation script to create a NAT Service in a public subnet to allow instances with only
     private IPs to have AWS API access to the NAT service.
 
-15. If you want to rerun ./create_beanstalk_with_eb_api.py from console, please ensure you terminate the environment followed by deleting the
+16. If you want to rerun ./create_beanstalk_with_eb_api.py from console, please ensure you terminate the environment followed by deleting the
     application in the AWS Console.
+
+17. Prior to deployment the .war file it is unpacked to ./tmp, the .ebextensions folder in the root of the .war is removed and seeded with configured
+    .ebextensions folder to allow configuring launched Ec2s with access to the Elastic File System File at /efs on the EC2
 
 
 EOF
