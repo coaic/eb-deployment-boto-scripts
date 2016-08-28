@@ -61,7 +61,7 @@ fi
 
     cat <<EOF >${distribution_config}
 {
-  "CallerReference": "${bucket_name}-2016-08-28",
+  "CallerReference": "${bucket_name}-2016-08-28b",
   "Aliases": {
     "Quantity": 0
   },
@@ -75,7 +75,7 @@ fi
         "S3OriginConfig": {
           "OriginAccessIdentity": ""
         },
-        "OriginPath": "${distribution_prefix}",
+        "OriginPath": "${distribution_prefix}"
       }
     ]
   },
@@ -114,7 +114,7 @@ EOF
     set -x
     aws cloudfront create-distribution --distribution-config file://$(pwd)/${distribution_config}
     #echo $(cat ${distribution_config})
-    python3 -c "import webbrowser; webbrowser.open(${cloudfront_console_uri})"
+    python3 -c "import webbrowser; webbrowser.open(\"${cloudfront_console_uri}\")"
 
 #
 # Set default index.html for distribution
