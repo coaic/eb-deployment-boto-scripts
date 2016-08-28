@@ -135,7 +135,7 @@ def create_cloutfront():
 #
 # Creat Elastic File System in VPC
 #
-def create_elastic_filesystem(region, vpc_id, private_subnets):
+def create_elastic_filesystem(region, vpc_id, private_subnets, security_group_id):
     print("""
 
     As Elastic File System is a relatively new service, API support is far from complete. You will need to create the file system
@@ -148,8 +148,9 @@ def create_elastic_filesystem(region, vpc_id, private_subnets):
 
     """)
     input("Ready to proceed? ")
-    input("Please note the VPC Id: %s, you will need to select this from wizard when it opens in the browser - ok? " %(vpc_id))
-    input(" Please also ensure you place this file system in the following subnets: %s - ok?" % (private_subnets))
+    input(" Please note the VPC Id: %s, you will need to select this from wizard when it opens in the browser - ok? " %(vpc_id))
+    input(" Please ensure you place this file system in the following subnets: %s - ok?" % (private_subnets))
+    input(" Please also ensure the following security group is selected, in addition to the default security group: %s - ok?" % (security_group_id))
     webbrowser.open_new("https://%s.console.aws.amazon.com/efs/home?region=%s#/wizard/1" % (region, region))
 
     mount_point = input("Once you have completed the wizard please paste the mount point from the browser at the prompt: ")
@@ -168,7 +169,7 @@ security_group_id = create_security_groups(vpc_name=vpc_name, vpc_id=vpc_id)
 #
 # Create EFS and save the mount point for use by deployment scripts
 #
-mount_point = create_elastic_filesystem(region=region, vpc_id=vpc_id, private_subnets=private_subnets)
+mount_point = create_elastic_filesystem(region=region, vpc_id=vpc_id, private_subnets=private_subnets, security_group_id=security_group_id)
 
 f = open("elastic_file_system_mount", 'w')
 f.seek(0)

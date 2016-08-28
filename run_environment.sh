@@ -80,7 +80,7 @@ while true; do
     esac
 done
 
-read -p "Copy and from terminal and paste command to run: " command
+read -p "Copy from terminal and paste command to run: " command
 
 (
     echo "Now creating Elastic Beanstalk and launch default Java application"
@@ -106,7 +106,9 @@ mv ROOT.war ROOT-orig.war
     cat <<EOF  >.ebextensions/efs-mount.config
 container_commands:
   create_mount_point:
-    command: "mkdir /efs || chown ec2-user /efs || true"
+    command: "mkdir -p /efs"
+  change_efs_ownership:
+    command "chown -v 500 /efs"
   mount_efs_volume:
     command: "${new_mount}"
 EOF

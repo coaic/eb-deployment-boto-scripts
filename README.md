@@ -10,9 +10,9 @@ The scripts make several assumptions about the AWS environment:
 
 3.  Assumes the region is us-west-2
 
-4.  Assumes the .war file to be launched is in the same folder as the scripts and is named ROOT.war
+4.  Assumes the .war file to be launched is in the same folder as the scripts and is named *ROOT.war*
 
-5.  Assumes an email address for Simple Notification Service notifications: rcoaic at gmail dot com
+5.  Assumes an email address for Simple Notification Service notifications: *rcoaic at gmail dot com*
 
 6.  The AWS CLI must be installed. Refer to: http://docs.aws.amazon.com/cli/latest/userguide/installing.html
 
@@ -29,13 +29,13 @@ The scripts make several assumptions about the AWS environment:
 12. There is a reliance on AWS Elastic Beanstalk to create an initial bucket to maintain configuration data needed by
     the service in the region being used.
 
-13. Assumes an EC2 key pair exists for the region, assumes shelde-test-us-west-2.
+13. Assumes an EC2 key pair exists for the region, assumes *shelde-test-us-west-2*.
 
-14. Assumes default roles have been created by Elastic Beanstalk named: aws-elasticbeanstalk-ec2-role and aws-elasticbeanstalk-service-role
+14. Assumes default roles have been created by Elastic Beanstalk named: *aws-elasticbeanstalk-ec2-role* and *aws-elasticbeanstalk-service-role*
     -- this is a one time requirement, roles are not region specific.
-    -- aws-elasticbeanstalk-ec2-role should have the attached policies { AWSElasticBeanstalkWebTier, CloudWatchLogsFullAccess,
-                                                                         AWSElasticBeanstalkMulticontainerDocker, AWSElasticBeanstalkWorkerTier }
-    -- aws-elasticbeanstalk-service-role should have attached policies { AWSElasticBeanstalkEnhancedHealth, AWSElasticBeanstalkService }
+    -- aws-elasticbeanstalk-ec2-role should have the attached policies *{ AWSElasticBeanstalkWebTier, CloudWatchLogsFullAccess,
+                                                                         AWSElasticBeanstalkMulticontainerDocker, AWSElasticBeanstalkWorkerTier }*
+    -- aws-elasticbeanstalk-service-role should have attached policies *{ AWSElasticBeanstalkEnhancedHealth, AWSElasticBeanstalkService }*
 
 15. The EC2s launched by Elastic Beanstalk have public IPs assigned -- public internet connectivity is required for the EC2s to access
     Elastic Beanstalk API end points.
