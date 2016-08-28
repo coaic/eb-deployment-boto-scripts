@@ -57,188 +57,50 @@ fi
 
     cat <<EOF >${distribution_config}
 {
-    "DistributionConfig": {
-        "CallerReference": "",
-        "Aliases": {
-            "Quantity": 0,
-            "Items": [
-                ""
-            ]
-        },
-        "DefaultRootObject": "",
-        "Origins": {
-            "Quantity": 0,
-            "Items": [
-                {
-                    "Id": "S3-${distribution_domain}",
-                    "DomainName": "${distribution_domain}",
-                    "OriginPath": "${distribution_prefix}",
-                    "CustomHeaders": {
-                        "Quantity": 0,
-                        "Items": [
-                            {
-                                "HeaderName": "",
-                                "HeaderValue": ""
-                            }
-                        ]
-                    },
-                    "S3OriginConfig": {
-                        "OriginAccessIdentity": ""
-                    },
-                    "CustomOriginConfig": {
-                        "HTTPPort": 80,
-                        "HTTPSPort": 443,
-                        "OriginProtocolPolicy": "http-only",
-                        "OriginSslProtocols": {
-                            "Quantity": 0,
-                            "Items": [
-                                ""
-                            ]
-                        }
-                    }
-                }
-            ]
-        },
-        "DefaultCacheBehavior": {
-            "TargetOriginId": "S3-${distribution_domain}",
-            "ForwardedValues": {
-                "QueryString": false,
-                "Cookies": {
-                    "Forward": "none",
-                    "WhitelistedNames": {
-                        "Quantity": 0,
-                        "Items": [
-                            ""
-                        ]
-                    }
-                },
-                "Headers": {
-                    "Quantity": 0,
-                    "Items": [
-                        ""
-                    ]
-                }
-            },
-            "TrustedSigners": {
-                "Enabled": false,
-                "Quantity": 0,
-                "Items": [
-                    ""
-                ]
-            },
-            "ViewerProtocolPolicy": "allow-all",
-            "MinTTL": 0,
-            "AllowedMethods": {
-                "Quantity": 2,
-                "Items": [
-                    "GET",
-                    "HEAD"
-                ],
-                "CachedMethods": {
-                    "Quantity": 2,
-                    "Items": [
-                        "GET",
-                        "HEAD"
-                    ]
-                }
-            },
-            "SmoothStreaming": false,
-            "DefaultTTL": 0,
-            "MaxTTL": 0,
-            "Compress": true
-        },
-        "CacheBehaviors": {
-            "Quantity": 0,
-            "Items": [
-                {
-                    "PathPattern": "",
-                    "TargetOriginId": "",
-                    "ForwardedValues": {
-                        "QueryString": true,
-                        "Cookies": {
-                            "Forward": "",
-                            "WhitelistedNames": {
-                                "Quantity": 0,
-                                "Items": [
-                                    ""
-                                ]
-                            }
-                        },
-                        "Headers": {
-                            "Quantity": 0,
-                            "Items": [
-                                ""
-                            ]
-                        }
-                    },
-                    "TrustedSigners": {
-                        "Enabled": true,
-                        "Quantity": 0,
-                        "Items": [
-                            ""
-                        ]
-                    },
-                    "ViewerProtocolPolicy": "",
-                    "MinTTL": 0,
-                    "AllowedMethods": {
-                        "Quantity": 0,
-                        "Items": [
-                            ""
-                        ],
-                        "CachedMethods": {
-                            "Quantity": 0,
-                            "Items": [
-                                ""
-                            ]
-                        }
-                    },
-                    "SmoothStreaming": true,
-                    "DefaultTTL": 0,
-                    "MaxTTL": 0,
-                    "Compress": true
-                }
-            ]
-        },
-        "CustomErrorResponses": {
-            "Quantity": 0,
-            "Items": [
-                {
-                    "ErrorCode": 0,
-                    "ResponsePagePath": "",
-                    "ResponseCode": "",
-                    "ErrorCachingMinTTL": 0
-                }
-            ]
-        },
-        "Comment": "",
-        "Logging": {
-            "Enabled": true,
-            "IncludeCookies": true,
-            "Bucket": "",
-            "Prefix": ""
-        },
-        "PriceClass": "",
-        "Enabled": true,
-        "ViewerCertificate": {
-            "CloudFrontDefaultCertificate": true,
-            "IAMCertificateId": "",
-            "ACMCertificateArn": "",
-            "SSLSupportMethod": "",
-            "MinimumProtocolVersion": "",
-            "Certificate": "",
-            "CertificateSource": ""
-        },
-        "Restrictions": {
-            "GeoRestriction": {
-                "RestrictionType": "none",
-                "Quantity": 0,
-                "Items": [
-                    ""
-                ]
-            }
-        },
-        "WebACLId": ""
-    }
+  "CallerReference": "${bucket_name}-2016-08-28",
+  "Aliases": {
+    "Quantity": 0
+  },
+  "DefaultRootObject": "index.html",
+  "Origins": {
+    "Quantity": 1,
+    "Items": [
+      {
+        "Id": "S3-${bucket_name}",
+        "DomainName": "${distribution_domain}",
+        "S3OriginConfig": {
+          "OriginAccessIdentity": ""
+        }
+      }
+    ]
+  },
+  "DefaultCacheBehavior": {
+    "TargetOriginId": "${bucket_name}",
+    "ForwardedValues": {
+      "QueryString": true,
+      "Cookies": {
+        "Forward": "none"
+      }
+    },
+    "TrustedSigners": {
+      "Enabled": false,
+      "Quantity": 0
+    },
+    "ViewerProtocolPolicy": "allow-all",
+    "MinTTL": 3600
+  },
+  "CacheBehaviors": {
+    "Quantity": 0
+  },
+  "Comment": "",
+  "Logging": {
+    "Enabled": false,
+    "IncludeCookies": true,
+    "Bucket": "",
+    "Prefix": ""
+  },
+  "PriceClass": "PriceClass_All",
+  "Enabled": true
 }
 EOF
     set -x
