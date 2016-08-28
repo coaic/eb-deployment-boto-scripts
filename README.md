@@ -1,5 +1,6 @@
 # eb-deployment-boto-scripts
-Suite of orchestration scripts to create VPC, EFS File System, CloudFront Distribution and Elastic Beanstalk
+#### Suite of orchestration scripts to create VPC, EFS File System, CloudFront Distribution and Elastic Beanstalk
+##### Assumptions
 
 The scripts make several assumptions about the AWS environment:
 
@@ -49,4 +50,19 @@ The scripts make several assumptions about the AWS environment:
     .ebextensions folder to allow configuring launched Ec2s with access to the Elastic File System File at /efs on the EC2. The static assets are
     moved to a folder ./assets to be coppied to an S3 bucket prefix.
 
+##### Running the scripts
 
+You can run the scripts in the correct order by running the script **run_environment.sh**. Alternatively your can run the scripts in more or less the following order, 
+depending on what you want to achieve:
+
+* **create_eb_vpc_with_ec2_api.py** - Creates the a VPC with public and private subnets, distributed across all availability zones in the region.
+
+* **create_beanstalk_with_eb_eb_api.py** - Creates a Java beanstalk in the previously created VPC in with the webworker EC2s deployed behind an Elastic
+Load Balancer in the public subnets. Each EC2 on launch is automatically connected to an Elastic File System file store mounted at **/efs**.
+The beanstalk is deployed with a default Java application which can be replaced by running **deploy_application_with_eb_api.py**.
+
+* **deploy_application_with_eb_api.py** - Deploys a *.war* file *ROOT.war* to the running beanstalk. As part of the script operations, the .war is unpacked, 
+*.ebextensions* removed, and replaced with an updated .ebextensions that includes functions to enable *CloudWatch Logs* and *Elastic File System*.
+
+* **create_cloud_front_distribution.sh** - Creates an S3 bucket, use *aws s3 sync* to sync static content to a bucket prefix */blue* and deploys a *CloudFront* distribution
+that use the S3 bucket as an origin at the */blue* prefix.
