@@ -105,12 +105,12 @@ mv ROOT.war ROOT-orig.war
     #
     cat <<EOF  >.ebextensions/efs-mount.config
 container_commands:
-  create_mount_point:
+  01-command:
     command: "mkdir -p /efs"
-  change_efs_ownership:
-    command "chown -v 500 /efs"
-  mount_efs_volume:
+  02-command:
     command: "${new_mount}"
+  03-command:
+    command: "chown -v -R ec2-user:ec2-user /efs"
 EOF
     cp -a images css js ../cloudfront
     jar -cf ../ROOT.war  *.jsp images css js WEB-INF .ebextensions
