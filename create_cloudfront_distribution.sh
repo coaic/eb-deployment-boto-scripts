@@ -56,9 +56,6 @@ EOF
     #
     # Configure the CloudFront distribution
     #
-
-fi
-
     cat <<EOF >${distribution_config}
 {
   "CallerReference": "${bucket_name}-2016-08-28b",
@@ -111,9 +108,12 @@ fi
   "Enabled": true
 }
 EOF
+
+fi
+
     set -x
     aws cloudfront create-distribution --distribution-config file://$(pwd)/${distribution_config}
-    #echo $(cat ${distribution_config})
+    read -p "The CloudFront distribution can take up to 15 minutes to deploy, when you press ENTER the CloudFront console will open in the browser - ok? "
     python3 -c "import webbrowser; webbrowser.open(\"${cloudfront_console_uri}\")"
 
 #
