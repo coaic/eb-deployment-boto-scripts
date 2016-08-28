@@ -8,10 +8,14 @@ bucket_name_prefix="shelde-test-distribution"
 distribution_domain="${bucket_name_prefix}-${region}-${account_id}.s3.amazonaws.com"
 distribution_prefix="/blue"
 #
+# Access to AWS Console
+#
+cloudfront_console_uri="https://console.aws.amazon.com/cloudfront/home?region=${region}#distributions:"
+#
 # Files created/overwritten by script
 #
 bucket_policy="bucket-policy.json"
-distribution_config="cloud-front-distribution.json"
+distribution_config="cloudfront-distribution.json"
 
 local_distribution_content="cloudfront"
 
@@ -61,7 +65,7 @@ fi
   "Aliases": {
     "Quantity": 0
   },
-  "DefaultRootObject": "index.html",
+  "DefaultRootObject": "",
   "Origins": {
     "Quantity": 1,
     "Items": [
@@ -70,14 +74,18 @@ fi
         "DomainName": "${distribution_domain}",
         "S3OriginConfig": {
           "OriginAccessIdentity": ""
-        }
+        },
+        "OriginPath": "${distribution_prefix}",
       }
     ]
   },
+  "DefaultRootObject": "index.html",
+  "PriceClass": "PriceClass_All",
+  "Enabled": true,
   "DefaultCacheBehavior": {
-    "TargetOriginId": "${bucket_name}",
+    "TargetOriginId": "S3-${bucket_name}",
     "ForwardedValues": {
-      "QueryString": true,
+      "QueryString": false,
       "Cookies": {
         "Forward": "none"
       }
@@ -106,6 +114,29 @@ EOF
     set -x
     aws cloudfront create-distribution --distribution-config file://$(pwd)/${distribution_config}
     #echo $(cat ${distribution_config})
+    python3 -c "import webbrowser; webbrowser.open(${cloudfront_console_uri})"
 
+#
+# Set default index.html for distribution
+#
+cat <<EOF >${local_distribution_content}/index.html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-# aws s3 sync ${local_distribution_content} "s3://${bucket_name}/${distribution_name}/" --delete
+    <link href="css/bootstrap.css" rel="stylesheet" />
+    <link href="css/snakes.css" rel="stylesheet" />
+
+    <title>Default Page for Static Assets in CloudFront</title>
+  </head>
+  <body>
+    <h1>Default Page for Static Assets in CloudFront</h1>
+  </body>
+</html>
+EOF
+
+set -x
+aws s3 sync ${local_distribution_content} "s3://${bucket_name}${distribution_prefix}/" --delete
